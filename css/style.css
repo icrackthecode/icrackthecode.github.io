@@ -183,7 +183,7 @@ body {
   #main {
     display: inline;
     float: left;
-    width: 73.33333333333333%;
+    width: 81.66666666666667%;
     margin: 0 0.833333333333333%;
   }
 }
@@ -514,7 +514,7 @@ body {
   color: #777;
 }
 .article {
-  margin: 50px 0;
+  margin: 24px 0;
 }
 .article-inner {
   overflow: hidden;
@@ -759,7 +759,7 @@ a.article-title:hover {
 }
 @media screen and (min-width: 768px) {
   #article-nav {
-    margin: 50px 0;
+    margin: 24px 0;
   }
   #article-nav:before {
     width: 8px;
@@ -783,7 +783,7 @@ a.article-title:hover {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  margin-top: 50px;
+  margin-top: 24px;
   text-align: center;
   display: block;
 }
@@ -957,13 +957,13 @@ a.article-title:hover {
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 3px;
-  margin: 50px 0;
+  margin: 24px 0;
 }
 #comments a {
   color: #258fb8;
 }
 .archives-wrap {
-  margin: 50px 0;
+  margin: 24px 0;
 }
 .archives:before,
 .archives:after {
@@ -1030,7 +1030,7 @@ a.article-title:hover {
   display: block;
 }
 #page-nav {
-  margin: 50px auto;
+  margin: 24px auto;
   background: #fff;
   -webkit-box-shadow: 1px 2px 3px #ddd;
   box-shadow: 1px 2px 3px #ddd;
@@ -1300,12 +1300,12 @@ pre .javascript .function {
   #sidebar {
     display: inline;
     float: left;
-    width: 23.333333333333332%;
+    width: 15%;
     margin: 0 0.833333333333333%;
   }
 }
 .widget-wrap {
-  margin: 50px 0;
+  margin: 24px 0;
 }
 .widget {
   color: #777;
