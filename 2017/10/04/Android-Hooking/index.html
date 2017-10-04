@@ -11,7 +11,7 @@
 <meta property="og:url" content="http://icrackthecode.github.io/2017/10/04/Android-Hooking/index.html">
 <meta property="og:site_name" content="Charles Muiruri">
 <meta property="og:description" content="I recently found my self in situation where I had to analyze  another process in order to understand what was really happing . In order to achieve this , I had to  monitor the target process in one wa">
-<meta property="og:updated_time" content="2017-10-04T21:23:59.000Z">
+<meta property="og:updated_time" content="2017-10-04T22:16:51.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android Hooking">
 <meta name="twitter:description" content="I recently found my self in situation where I had to analyze  another process in order to understand what was really happing . In order to achieve this , I had to  monitor the target process in one wa">
@@ -80,9 +80,9 @@ ga('send', 'pageview');
                 <a id="nav-linkedin-link" class="nav-icon" href=""></a>
                 <a id="nav-twitter-link" class="nav-icon" href="https://twitter.com/icrackthecode"></a>
                 
-                    <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+                    <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
                     
-                        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+                        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
             </nav>
             <div id="search-form-wrap">
                 <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://icrackthecode.github.io"></form>
@@ -150,13 +150,16 @@ ga('send', 'pageview');
 <p>We need to check whether the GOT address actually contains a pointer to sleep before we progress and once we confirm all we do is just write</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"> _remote_function = <span class="keyword">function</span>Address(LIB_C, target_pid, (void*)sleep);</div><div class="line"></div><div class="line"><span class="keyword">if</span> (_remote_function == (uint32_t*)(size_t)ptrace(PTRACE_PEEKDATA, target_pid, GOT_entry_address, NULL)) &#123;</div><div class="line"></div><div class="line">  	uint32_t target_memory = (uint32_t)map_base;</div><div class="line"></div><div class="line">  	target_memory =  target_memory+1; //Dont forget thumb mode </div><div class="line"></div><div class="line">    ptrace_writedata(target_pid, (uint8_t*)GOT_entry_address, (uint8_t*)&amp;target_memory,</div><div class="line">                     sizeof(long));</div><div class="line"></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>And Voila we are  <strong>DONE !!!!!</strong> 🎉🎉🎉 😎</p>
+ <a href="https://github.com/icrackthecode/androidhookinhbasics" title="[external] [title]" target="_blank" rel="external">The whole project can be found here</a> 
+<p>The expected out is as shown below <strong>ENJOY</strong></p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">[+] Remote address found @ 0xb6f030b9</div><div class="line">[+] base address of /data/<span class="built_in">local</span>/tmp/target: 0xb6f87000</div><div class="line">[+] got entry offset of sleep: 0x2fe8</div><div class="line">[+] Sleep address found @ 0xb6f89fe8</div><div class="line">Call remote <span class="keyword">function</span> b6ef7e51 with 6 arguments, <span class="built_in">return</span> value is b63ff000</div><div class="line">[+] Map base @ 0xb63ff000</div><div class="line"></div><div class="line">****************************************************</div><div class="line">DUMP OF EVIL FUNCTION IN TARGET PROCESS (0xb63ff000)</div><div class="line">****************************************************</div><div class="line"> 70 47 00 00  pG..</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line">*********************************************</div><div class="line"></div><div class="line"></div><div class="line">**********************************************</div><div class="line">DUMP OF GOT ADDRESS </div><div class="line">**********************************************</div><div class="line"> 00 f0 3f b6  ..?.</div><div class="line">**********************************************</div><div class="line"></div><div class="line"></div><div class="line">**********************************************</div><div class="line">DUMP OF ADDRESS IN GOT (After patching)</div><div class="line">**********************************************</div><div class="line"> 70 47 00 00  pG..</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line"> 00 00 00 00  ....</div><div class="line">**********************************************</div></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://icrackthecode.github.io/2017/10/04/Android-Hooking/" data-id="cj8dkatfc0000s52yiesojzhf" class="article-share-link">Partager</a>
+      <a data-url="http://icrackthecode.github.io/2017/10/04/Android-Hooking/" data-id="cj8dlfry70000ft2ydgc6n5i3" class="article-share-link">Share</a>
       
-        <a href="http://icrackthecode.github.io/2017/10/04/Android-Hooking/#disqus_thread" class="article-comment-link">Commentaires</a>
+        <a href="http://icrackthecode.github.io/2017/10/04/Android-Hooking/#disqus_thread" class="article-comment-link">Comments</a>
       
       
     </footer>
@@ -167,7 +170,7 @@ ga('send', 'pageview');
   
   
     <a href="/2017/05/17/SIOCSIFORDER-count-out-of-bounds/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Ancien</strong>
+      <strong class="article-nav-caption">Older</strong>
       <div class="article-nav-title">SIOCSIFORDER count memory corruption bug</div>
     </a>
   
@@ -191,7 +194,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Mot-clés</h3>
+    <h3 class="widget-title">Tags</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS-X-iOS/">OS X/iOS</a></li></ul>
     </div>
@@ -201,7 +204,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
       <a href="/tags/OS-X-iOS/" style="font-size: 10px;">OS X/iOS</a>
     </div>
@@ -220,7 +223,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
@@ -245,7 +248,7 @@ ga('send', 'pageview');
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Charles Muiruri<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
