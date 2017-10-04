@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android Hooking | Charles Muiruri</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="I recently found my self in situation where I had to analyze  another process in order to understand what was really happing . In order to achieve this , I had to  monitor the target process in one wa">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android Hooking">
+<meta property="og:url" content="http://icrackthecode.github.io/2017/10/04/Android-Hooking/index.html">
+<meta property="og:site_name" content="Charles Muiruri">
+<meta property="og:description" content="I recently found my self in situation where I had to analyze  another process in order to understand what was really happing . In order to achieve this , I had to  monitor the target process in one wa">
+<meta property="og:updated_time" content="2017-10-04T21:23:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android Hooking">
+<meta name="twitter:description" content="I recently found my self in situation where I had to analyze  another process in order to understand what was really happing . In order to achieve this , I had to  monitor the target process in one wa">
+  
+    <link rel="alternate" href="/atom.xml" title="Charles Muiruri" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-99584891-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+    <div id="banner"></div>
+    <div id="header-outer" class="outer">
+        <div id="header-title" class="inner">
+            <h1 id="logo-wrap">
+                <a href="/" id="logo">
+                    Charles Muiruri
+                </a>
+            </h1>
+            
+                <h2 id="subtitle-wrap">
+                    <a href="/" id="subtitle">
+                        EXPLOIT DEVELOPMENT ||  I BREAK TO BUILD
+                    </a>
+                </h2>
+                
+        </div>
+        <div id="header-inner" class="inner">
+            <nav id="main-nav">
+                <a id="main-nav-toggle" class="nav-icon"></a>
+                
+                    <a class="main-nav-link" href="/">
+                        Home
+                    </a>
+                    
+                    <a class="main-nav-link" href="/archives">
+                        Archives
+                    </a>
+                    
+            </nav>
+            <nav id="sub-nav">
+                <a id="nav-github-link" class="nav-icon" href="https://github.com/icrackthecode"></a>
+                <a id="nav-linkedin-link" class="nav-icon" href=""></a>
+                <a id="nav-twitter-link" class="nav-icon" href="https://twitter.com/icrackthecode"></a>
+                
+                    <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+                    
+                        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+            </nav>
+            <div id="search-form-wrap">
+                <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://icrackthecode.github.io"></form>
+            </div>
+        </div>
+    </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android-Hooking" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/10/04/Android-Hooking/" class="article-date">
+  <time datetime="2017-10-04T19:16:39.000Z" itemprop="datePublished">2017-10-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android Hooking
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I recently found my self in situation where I had to analyze  another process in order to understand what was really happing . In order to achieve this , I had to  monitor the target process in one way or another. In the process I had to implement a simple hook just to do <strong> <em>evil stuff</em> </strong>  😈 . </p>
+<p>For purposes of demonstration and for the blog I will simply look at how  you can hook onto another process changing the flow of execution. In this case we will simply have a sleep program as the target and a hooking program that arguments the sleeping behavior of the sleep program .</p>
+<p>Let’s get our hands dirty 😎 .</p>
+<a id="more"></a>
+<h3 id="By-definition"><a href="#By-definition" class="headerlink" title="By definition"></a>By definition</h3><p>Hooking refers to the process of changing   the behavior of software or its components. The code responsible of the aforementioned is referred to as a hook.</p>
+<h3 id="Target-program"><a href="#Target-program" class="headerlink" title="Target program"></a>Target program</h3><p>In this case we will have a simple sleep program that sleeps for 10 seconds. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#include &lt;stdio.h&gt;</span></div><div class="line"><span class="comment">#include &lt;stdlib.h&gt;</span></div><div class="line"></div><div class="line">int main(int argc, char const* argv[]) &#123;</div><div class="line">  int x = 1;</div><div class="line">  <span class="keyword">while</span> (x) &#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, <span class="string">"Sleep ..."</span>);</div><div class="line">    sleep(10);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="built_in">return</span> 0;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="Evil-Function"><a href="#Evil-Function" class="headerlink" title="Evil Function"></a>Evil Function</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">void</div><div class="line"><span class="function"><span class="title">evil_function</span></span>()</div><div class="line">&#123;</div><div class="line">	//empty <span class="keyword">for</span> now lets keep it that way </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Linux-process-basics"><a href="#Linux-process-basics" class="headerlink" title="Linux process basics"></a>Linux process basics</h3><p>From the basics of processes , any program that is started has a process id (<em>pid</em>). Every process has its own Virtual Memory Area (VMA) which is using memory management schemes it translates into a physical address. </p>
+<h3 id="Understanding-the-target"><a href="#Understanding-the-target" class="headerlink" title="Understanding the target"></a>Understanding the target</h3><p>In order do anything its important to always understand you target. This can be easily achieved using the <strong>File</strong> utility . In this case, the binary is an elf file . It is important to understand how the linker and the loader see this file. Won’t go into too much details since this could be another blogpost look at <a href="http://www.cirosantilli.com/elf-hello-world/" target="_blank" rel="external">http://www.cirosantilli.com/elf-hello-world/</a> for a detailed insight on elf files (also look at PLT and GOT sections <a href="https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html" target="_blank" rel="external">https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html</a>)</p>
+<p>GOT stands for global offset table which holds the various symbol offsets that are part of the binary and are from loaded the libraries </p>
+<h3 id="Game-Plan"><a href="#Game-Plan" class="headerlink" title="Game Plan"></a>Game Plan</h3><p>From the above we can easily formulate a plan 💡</p>
+<p>i) First we need to monitor the process of interest in order to inspect registers etc.. more like a debugger. This  can be easily achieved using ptrace<br>ii) Get the GOT offset of sleep symbol and calculate its address.<br>iii)Write our <strong> <em>evil function</em> </strong> into the target’s memory<br>iv) Patching GOT address with a pointer to our evil function.</p>
+<h1 id="i-The-almighty-debugger"><a href="#i-The-almighty-debugger" class="headerlink" title="i) The almighty debugger"></a>i) The almighty debugger</h1><p>In order to inspect contents of the remote target we need to use ptrace. So we will first attach ourselves to the target process.<br> <a href="http://man7.org/linux/man-pages/man2/ptrace.2.html" title="[external] [title]" target="_blank" rel="external">Ptrace</a> is very straight forward from its mans page.<br> <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (ptrace(PTRACE_ATTACH, target_pid, NULL, NULL) == -1) &#123;</div><div class="line">   perror(<span class="string">"[^] Unable to attach target\n"</span>);</div><div class="line">   <span class="built_in">return</span> -1;</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<h1 id="ii-Get-the-G-O-T"><a href="#ii-Get-the-G-O-T" class="headerlink" title="ii) Get the G.O.T"></a>ii) Get the G.O.T</h1><p>  In order to argument the sleep function we need to get its Global Offest so as we can overwrite it with a pointer to our evil function.</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div></pre></td><td class="code"><pre><div class="line">  /**</div><div class="line"> * Returns the GOT address of target <span class="keyword">function</span></div><div class="line"> * @param  module_path Module holding  symbol of interest</div><div class="line"> * @param  symbol_name symbol name</div><div class="line"> * @param  pid         target proccess id</div><div class="line"> * @<span class="built_in">return</span>             address from GOT</div><div class="line"> */</div><div class="line">uint32_t</div><div class="line">find_got_entry_address(const char* module_path, const char* symbol_name,</div><div class="line">                       pid_t pid)</div><div class="line">&#123;</div><div class="line">  uint32_t module_base = findLoadingAddress(module_path, pid);</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (module_base == 0) &#123;</div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="built_in">printf</span>(<span class="string">"[+] base address of %s: 0x%x\n"</span>, module_path, module_base);</div><div class="line"></div><div class="line">  int fd = open(module_path, O_RDONLY);</div><div class="line">  <span class="keyword">if</span> (fd == -1) &#123;</div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  Elf32_Ehdr* elf_header = (Elf32_Ehdr*)malloc(sizeof(Elf32_Ehdr));</div><div class="line">  <span class="keyword">if</span> (<span class="built_in">read</span>(fd, elf_header, sizeof(Elf32_Ehdr)) != sizeof(Elf32_Ehdr)) &#123;</div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  uint32_t sh_base = elf_header-&gt;e_shoff;</div><div class="line">  uint32_t ndx = elf_header-&gt;e_shstrndx;</div><div class="line">  uint32_t shstr_base = sh_base + ndx * sizeof(Elf32_Shdr);</div><div class="line"></div><div class="line">  lseek(fd, shstr_base, SEEK_SET);</div><div class="line">  Elf32_Shdr* shstr_shdr = (Elf32_Shdr*)malloc(sizeof(Elf32_Shdr));</div><div class="line">  <span class="keyword">if</span> (<span class="built_in">read</span>(fd, shstr_shdr, sizeof(Elf32_Shdr)) != sizeof(Elf32_Shdr)) &#123;</div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  char* shstrtab = (char*)malloc(sizeof(char) * shstr_shdr-&gt;sh_size);</div><div class="line">  lseek(fd, shstr_shdr-&gt;sh_offset, SEEK_SET);</div><div class="line">  <span class="keyword">if</span> (<span class="built_in">read</span>(fd, shstrtab, shstr_shdr-&gt;sh_size) != shstr_shdr-&gt;sh_size) &#123;</div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  Elf32_Shdr* shdr = (Elf32_Shdr*)malloc(sizeof(Elf32_Shdr));</div><div class="line">  Elf32_Shdr* relplt_shdr = (Elf32_Shdr*)malloc(sizeof(Elf32_Shdr));</div><div class="line">  Elf32_Shdr* dynsym_shdr = (Elf32_Shdr*)malloc(sizeof(Elf32_Shdr));</div><div class="line">  Elf32_Shdr* dynstr_shdr = (Elf32_Shdr*)malloc(sizeof(Elf32_Shdr));</div><div class="line"></div><div class="line">  lseek(fd, sh_base, SEEK_SET);</div><div class="line">  <span class="keyword">if</span> (<span class="built_in">read</span>(fd, shdr, sizeof(Elf32_Shdr)) != sizeof(Elf32_Shdr)) &#123;</div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line">  int i = 1;</div><div class="line">  char* s = NULL;</div><div class="line">  <span class="keyword">for</span> (; i &lt; elf_header-&gt;e_shnum; i++) &#123;</div><div class="line">    s = shstrtab + shdr-&gt;sh_name;</div><div class="line">    <span class="keyword">if</span> (strcmp(s, <span class="string">".rel.plt"</span>) == 0)</div><div class="line">      memcpy(relplt_shdr, shdr, sizeof(Elf32_Shdr));</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(s, <span class="string">".dynsym"</span>) == 0)</div><div class="line">      memcpy(dynsym_shdr, shdr, sizeof(Elf32_Shdr));</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(s, <span class="string">".dynstr"</span>) == 0)</div><div class="line">      memcpy(dynstr_shdr, shdr, sizeof(Elf32_Shdr));</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (<span class="built_in">read</span>(fd, shdr, sizeof(Elf32_Shdr)) != sizeof(Elf32_Shdr)) &#123;</div><div class="line">      <span class="built_in">printf</span>(<span class="string">"[-] read %s error! i = %d, in %s at line %d\n"</span>, module_path, i,</div><div class="line">             __FILE__, __LINE__);</div><div class="line">      <span class="built_in">return</span> 0;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  // <span class="built_in">read</span> dynmaic symbol string table</div><div class="line">  char* dynstr = (char*)malloc(sizeof(char) * dynstr_shdr-&gt;sh_size);</div><div class="line">  lseek(fd, dynstr_shdr-&gt;sh_offset, SEEK_SET);</div><div class="line">  <span class="keyword">if</span> (<span class="built_in">read</span>(fd, dynstr, dynstr_shdr-&gt;sh_size) != dynstr_shdr-&gt;sh_size) &#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"[-] read %s error!\n"</span>, module_path);</div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  // <span class="built_in">read</span> dynamic symbol table</div><div class="line">  Elf32_Sym* dynsymtab = (Elf32_Sym*)malloc(dynsym_shdr-&gt;sh_size);</div><div class="line">  lseek(fd, dynsym_shdr-&gt;sh_offset, SEEK_SET);</div><div class="line">  <span class="keyword">if</span> (<span class="built_in">read</span>(fd, dynsymtab, dynsym_shdr-&gt;sh_size) != dynsym_shdr-&gt;sh_size) &#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"[-] read %s error!\n"</span>, module_path);</div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  // <span class="built_in">read</span> each entry of relocation table</div><div class="line">  Elf32_Rel* rel_ent = (Elf32_Rel*)malloc(sizeof(Elf32_Rel));</div><div class="line">  lseek(fd, relplt_shdr-&gt;sh_offset, SEEK_SET);</div><div class="line">  <span class="keyword">if</span> (<span class="built_in">read</span>(fd, rel_ent, sizeof(Elf32_Rel)) != sizeof(Elf32_Rel)) &#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"[-] read %s error!\n"</span>, module_path);</div><div class="line">    <span class="built_in">return</span> 0;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">for</span> (i = 0; i &lt; relplt_shdr-&gt;sh_size / sizeof(Elf32_Rel); i++) &#123;</div><div class="line">    ndx = ELF32_R_SYM(rel_ent-&gt;r_info);</div><div class="line">    <span class="keyword">if</span> (strcmp(dynstr + dynsymtab[ndx].st_name, symbol_name) == 0) &#123;</div><div class="line">      <span class="built_in">printf</span>(<span class="string">"[+] got entry offset of %s: 0x%x\n"</span>, symbol_name,</div><div class="line">             rel_ent-&gt;r_offset);</div><div class="line">      <span class="built_in">break</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (<span class="built_in">read</span>(fd, rel_ent, sizeof(Elf32_Rel)) != sizeof(Elf32_Rel)) &#123;</div><div class="line">      <span class="built_in">printf</span>(<span class="string">"[-] read %s error!\n"</span>, module_path);</div><div class="line">      <span class="built_in">return</span> 0;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  uint32_t offset = rel_ent-&gt;r_offset;</div><div class="line">  Elf32_Half <span class="built_in">type</span> = elf_header-&gt;e_type; // ET_EXEC or ET_DYN</div><div class="line"></div><div class="line">  free(elf_header);</div><div class="line">  free(shstr_shdr);</div><div class="line">  free(shstrtab);</div><div class="line">  free(shdr);</div><div class="line">  free(relplt_shdr);</div><div class="line">  free(dynsym_shdr);</div><div class="line">  free(dynstr_shdr);</div><div class="line">  free(dynstr);</div><div class="line">  free(dynsymtab);</div><div class="line">  free(rel_ent);</div><div class="line"></div><div class="line">  // GOT entry offset is different between ELF executables and shared libraries</div><div class="line">  <span class="keyword">if</span> (<span class="built_in">type</span> == ET_EXEC)</div><div class="line">    <span class="built_in">return</span> offset;</div><div class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">type</span> == ET_DYN)</div><div class="line">    <span class="built_in">return</span> offset + module_base;</div><div class="line"></div><div class="line">  <span class="built_in">return</span> 0;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h1 id="iii-Writing-the-evil-function-on-target-process"><a href="#iii-Writing-the-evil-function-on-target-process" class="headerlink" title="iii) Writing the evil function on target process"></a>iii) Writing the evil function on target process</h1><p>The big question here is how do we write data to a process we have no access to and and how do we affect the memory area of another process baring in mind all the limitations thats are a result of Copy On Write (COW).<br>So far we have the GOT address and we have the ability to inspect the target’s memory. The aforementioned means that we can use registers of the attached process to do our dirty work 😁 . </p>
+<p>Before we get lost in excitement it is important to understand and identify that no process is aware of the existence of the other or knows about the other processes’s VMA. Now with this fundamental principle comes another challenge how do we do a simple mmap (<em>well this is important if we want to write into a memory region</em>). The only option we have is to find a way to call functions from the target process 🤔 . </p>
+<p>Remember we have control over the registers so we can do pretty much what we want to do as long as we are creative about it 💪 .</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">long CallRemoteFunction(pid_t pid, long function_addr, long* args, size_t argc)</div><div class="line">&#123;</div><div class="line">  struct pt_regs regs;</div><div class="line">  // backup the original regs</div><div class="line">  struct pt_regs backup_regs;</div><div class="line">  ptrace(PTRACE_GETREGS, pid, NULL, &amp;regs);</div><div class="line">  memcpy(&amp;backup_regs, &amp;regs, sizeof(struct pt_regs));</div><div class="line">  // put the first 4 args to r0-r3</div><div class="line">  int i;</div><div class="line">  <span class="keyword">for</span> (i = 0; i &lt; argc &amp;&amp; i &lt; 4; ++i) &#123;</div><div class="line">    regs.uregs[i] = args[i];</div><div class="line">  &#125;</div><div class="line">  // push the remainder to stack</div><div class="line">  <span class="keyword">if</span> (argc &gt; 4) &#123;</div><div class="line">    regs.ARM_sp -= (argc - 4) * sizeof(long);</div><div class="line">    long* data = args + 4;</div><div class="line">    ptrace_writedata(pid, (uint8_t*)regs.ARM_sp, (uint8_t*)data,</div><div class="line">                     (argc - 4) * sizeof(long));</div><div class="line">  &#125;</div><div class="line">  // <span class="built_in">set</span> <span class="built_in">return</span> addr to 0, so we could catch SIGSEGV</div><div class="line">  regs.ARM_lr = 0;</div><div class="line">  regs.ARM_pc = function_addr;</div><div class="line">  <span class="keyword">if</span> (regs.ARM_pc &amp; 1) &#123;</div><div class="line">    // thumb</div><div class="line">    regs.ARM_pc &amp;= (~1u);</div><div class="line">    regs.ARM_cpsr |= CPSR_T_MASK;</div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line">    // arm</div><div class="line">    regs.ARM_cpsr &amp;= ~CPSR_T_MASK;</div><div class="line">  &#125;</div><div class="line">  ptrace(PTRACE_SETREGS, pid, NULL, &amp;regs);</div><div class="line">  ptrace(PTRACE_CONT, pid, NULL, NULL);</div><div class="line">  waitpid(pid, NULL, WUNTRACED);</div><div class="line">  // to get <span class="built_in">return</span> value;</div><div class="line">  ptrace(PTRACE_GETREGS, pid, NULL, &amp;regs);</div><div class="line">  ptrace(PTRACE_SETREGS, pid, NULL, &amp;backup_regs);</div><div class="line">  // Fuction <span class="built_in">return</span> value</div><div class="line"></div><div class="line">  <span class="built_in">printf</span>(<span class="string">"Call remote function %lx with %d arguments, return value is %lx\n"</span>,</div><div class="line">         function_addr, argc, regs.ARM_r0);</div><div class="line"></div><div class="line">  <span class="built_in">return</span> regs.ARM_r0;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>one important concept to understand is that android has both ARM and Thumb states it is important to always check which state is in use  else this will haunt you <strong> <em>trust me this is from experience</em> </strong>. This deserves a blogpost too.<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (regs.ARM_pc &amp; 1) &#123;</div><div class="line">   // thumb</div><div class="line">   regs.ARM_pc &amp;= (~1u);</div><div class="line">   regs.ARM_cpsr |= CPSR_T_MASK;</div><div class="line"> &#125; <span class="keyword">else</span> &#123;</div><div class="line">   // arm</div><div class="line">   regs.ARM_cpsr &amp;= ~CPSR_T_MASK;</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<p>now since all is set lets create a function that calls mmap in the target process.<br>Still another problem we don’t know the address of mmap on target process so we cant call it. Now ASLR becomes a problem here 😩 .</p>
+<p>So again we use what we have. Assuming we know where Libc is loaded  and it’s distance from mmap is always the same that means we can calculate the address of mmap in the remote function assuming mathematically </p>
+<p>Using the formula<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">remote_function_address = local_function_address - (remote_libc_load_address + local_libc_load_address )</div></pre></td></tr></table></figure></p>
+<p>and just like that we defeated ASLR 😎 .<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * This <span class="keyword">function</span> bypasses KASLR to give address of remote <span class="keyword">function</span></div><div class="line"> * @param library                [target library]</div><div class="line"> * @param pid                    [target process id]</div><div class="line"> * @param local_function_address [address of remote <span class="keyword">function</span>]</div><div class="line"> */</div><div class="line">void* <span class="keyword">function</span>Address(const char* library, pid_t pid, void* local_function_address)</div><div class="line">&#123;</div><div class="line">  uintptr_t remote_loading_address, remote_function_address,</div><div class="line">    local_loading_address;</div><div class="line"></div><div class="line">  local_loading_address = findLoadingAddress(library, getpid());</div><div class="line"></div><div class="line">  remote_loading_address = findLoadingAddress(library, pid);</div><div class="line">  remote_function_address = (uintptr_t)local_function_address +</div><div class="line">                            (remote_loading_address - local_loading_address);</div><div class="line"></div><div class="line">  <span class="built_in">return</span> (void*)remote_function_address;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>Now lets progress and call mmap in the target processs</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">uint32_t</div><div class="line">page_mmap(pid_t pid)</div><div class="line">&#123;</div><div class="line">  void* _mmap;</div><div class="line">  _mmap = <span class="keyword">function</span>Address(LIB_C, pid, (void*)mmap);</div><div class="line">  long params[6];</div><div class="line">  params[0] = 0;</div><div class="line">  params[1] = 0x400;</div><div class="line">  params[2] = PROT_READ | PROT_WRITE | PROT_EXEC;</div><div class="line">  params[3] = MAP_PRIVATE | MAP_ANONYMOUS;</div><div class="line">  params[4] = 0;</div><div class="line">  params[5] = 0;</div><div class="line"></div><div class="line">  <span class="built_in">return</span> CallRemoteFunction(pid, _mmap, params, 6);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Now all we need to do is write into the maped memory our evil function . Once more Ptrace is <strong>BAE</strong> in this case since we will use <strong>PTRACE_POKETEXT</strong> which simply copies data into the provided address.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Write data into memory</div><div class="line"> * @param pid  target pid</div><div class="line"> * @param dest destination</div><div class="line"> * @param data data</div><div class="line"> * @param size size</div><div class="line"> */</div><div class="line">void ptrace_writedata(pid_t pid, uint8_t* dest, uint8_t* data, size_t size)</div><div class="line">&#123;</div><div class="line">  uint32_t i, j, remain;</div><div class="line">  uint8_t* laddr;</div><div class="line"></div><div class="line">  union u</div><div class="line">  &#123;</div><div class="line">    long val;</div><div class="line">    char chars[sizeof(long)];</div><div class="line">  &#125; d;</div><div class="line"></div><div class="line">  j = size / 4;</div><div class="line">  remain = size % 4;</div><div class="line"></div><div class="line">  laddr = data;</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (i = 0; i &lt; j; i++) &#123;</div><div class="line">    memcpy(d.chars, laddr, 4);</div><div class="line">    ptrace(PTRACE_POKETEXT, pid, dest, d.val);</div><div class="line"></div><div class="line">    dest += 4;</div><div class="line">    laddr += 4;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (remain &gt; 0) &#123;</div><div class="line">    d.val = ptrace(PTRACE_PEEKTEXT, pid, dest, 0);</div><div class="line">    <span class="keyword">for</span> (i = 0; i &lt; remain; i++) &#123;</div><div class="line">      d.chars[i] = *laddr++;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    ptrace(PTRACE_POKETEXT, pid, dest, d.val);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>finally the last piece in the writing puzzle<br> <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ptrace_writedata(target_pid, (uint8_t *)map_base, (uint8_t *)evil_function-1,sizeof(map_base));</div></pre></td></tr></table></figure></p>
+<p>Notice <strong>(uint8_t *)evil_function-1</strong> has a minus one. Well if thats not there chaos erupt literally. Remember when I said Thumb and ARM may become a pain if not handled correctly ; this is what I meant.</p>
+<h3 id="Pointers-to-functions-in-thumb-state"><a href="#Pointers-to-functions-in-thumb-state" class="headerlink" title="Pointers to functions in thumb state"></a>Pointers to functions in thumb state</h3><p>In order to allow interworking between the two states , If you have a thumb function the pointer to that function must have its least significant bit set. So that means a pointer to the function will have a plus one  . So in order to get the actual pointer you have to subtract one from the pointer.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">typedef int (*FN)();</div><div class="line"><span class="function"><span class="title">myfunc</span></span>() &#123;</div><div class="line">    FN fnptrs[] = &#123;</div><div class="line">        (FN)(0x8084 + 1),  // Valid Thumb address</div><div class="line">        (FN)(0x8074)       // Invalid Thumb address</div><div class="line">    &#125;;</div><div class="line">    FN* myfunctions = fnptrs;</div><div class="line">    myfunctions[0]();    // Call OK</div><div class="line">    myfunctions[1]();    // Call fails</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Patching-our-GOT-with-a-pointer-to-evil-function"><a href="#Patching-our-GOT-with-a-pointer-to-evil-function" class="headerlink" title="Patching our GOT with a pointer to evil function"></a>Patching our GOT with a pointer to evil function</h3><p>Well just incase I missed this , the GOT holds a pointer to the target function ie sleep in our case so if we patch this by placing a pointer to our evil function.</p>
+<p>We need to check whether the GOT address actually contains a pointer to sleep before we progress and once we confirm all we do is just write</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"> _remote_function = <span class="keyword">function</span>Address(LIB_C, target_pid, (void*)sleep);</div><div class="line"></div><div class="line"><span class="keyword">if</span> (_remote_function == (uint32_t*)(size_t)ptrace(PTRACE_PEEKDATA, target_pid, GOT_entry_address, NULL)) &#123;</div><div class="line"></div><div class="line">  	uint32_t target_memory = (uint32_t)map_base;</div><div class="line"></div><div class="line">  	target_memory =  target_memory+1; //Dont forget thumb mode </div><div class="line"></div><div class="line">    ptrace_writedata(target_pid, (uint8_t*)GOT_entry_address, (uint8_t*)&amp;target_memory,</div><div class="line">                     sizeof(long));</div><div class="line"></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>And Voila we are  <strong>DONE !!!!!</strong> 🎉🎉🎉 😎</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://icrackthecode.github.io/2017/10/04/Android-Hooking/" data-id="cj8djkmih00011e2yfgcsxlho" class="article-share-link">Partager</a>
+      
+        <a href="http://icrackthecode.github.io/2017/10/04/Android-Hooking/#disqus_thread" class="article-comment-link">Commentaires</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/10/04/Android-Hooking-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Récent</strong>
+      <div class="article-nav-title">
+        
+          Android-Hooking
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/05/17/SIOCSIFORDER-count-out-of-bounds/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">SIOCSIFORDER count memory corruption bug</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Mot-clés</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS-X-iOS/">OS X/iOS</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/OS-X-iOS/" style="font-size: 10px;">OS X/iOS</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">May 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/10/04/Android-Hooking-2/">Android-Hooking</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/04/Android-Hooking-1/">Android-Hooking</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/04/Android-Hooking/">Android Hooking</a>
+          </li>
+        
+          <li>
+            <a href="/2017/05/17/SIOCSIFORDER-count-out-of-bounds/">SIOCSIFORDER count memory corruption bug</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Charles Muiruri<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'icrackthecode';
+  
+  var disqus_url = 'http://icrackthecode.github.io/2017/10/04/Android-Hooking/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
